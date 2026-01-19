@@ -4,10 +4,13 @@ import org.springframework.boot.SpringApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,6 +22,9 @@ import java.util.Date;
 import java.util.List;
 
 @SpringBootApplication
+@ComponentScan(basePackages = "com.LvlUp")          // Scans for @Service, @Controller, @Configuration
+@EnableJpaRepositories(basePackages = "com.LvlUp.Repository") // Scans for @Repository
+@EntityScan(basePackages = "com.LvlUp.Entity")
 public class LevelUpApplication {
 	private static final Logger log = LoggerFactory.getLogger(LevelUpApplication.class);
 	private static final List<String> LOG_MESSAGES = new ArrayList<>();
@@ -107,12 +113,12 @@ public class LevelUpApplication {
 						Files.delete(file);
 						WriteLog("Deleted file: " + file);
 					} catch (IOException e) {
-						log.error("Failed to delete file: " + file, e);
+                        log.error("Failed to delete file: {}", file, e);
 					}
 				});
 			}
 		} catch (IOException e) {
-			log.error("Failed to access or delete files in directory: " + directoryPath, e);
+            log.error("Failed to access or delete files in directory: {}", directoryPath, e);
 		}
 	}
 
