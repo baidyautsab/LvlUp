@@ -6,19 +6,28 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class PdfExtractorService {
-    private final PdfExtractorRepository repository;
+    private final PdfExtractorRepository pdfRepository;
+    private final QuizGenerationService quizService; // Inject the new service
 
-    public PdfExtractorService(PdfExtractorRepository repository) {
-        this.repository = repository;
+    public PdfExtractorService(PdfExtractorRepository pdfRepository, QuizGenerationService quizService) {
+        this.pdfRepository = pdfRepository;
+        this.quizService = quizService;
     }
 
+    public boolean existsByFileName(String fileName) {
+        return pdfRepository.existsByFileName(fileName);
+    }
+
+    @Transactional
     public PdfExtractor extractAndSave(MultipartFile file, String topic) {
         try {
             // 1. Convert MultipartFile to Resource
@@ -39,10 +48,29 @@ public class PdfExtractorService {
             pdfExtractor.setTopic(topic);
             pdfExtractor.setExtractedText(content);
 
-            return repository.save(pdfExtractor);
+            PdfExtractor savedPdf = pdfRepository.save(pdfExtractor);
+
+            quizService.generateAndSaveQuestions(savedPdf);
+
+            return savedPdf;
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to process PDF file: " + e.getMessage());
         }
+    }
+
+    public Optional<PdfExtractor> getFileByName(String fileName) {
+        return pdfRepository.findByFileName(fileName);
+    }
+
+    public void deleteFileByName(String fileName) {
+        pdfRepository.deleteByFileName(fileName);
+    }
+
+    public PdfExtractor updateTopic(String fileName, String newTopic) {
+        PdfExtractor pdf = pdfRepository.findByFileName(fileName)
+                .orElseThrow(() -> new RuntimeException("File not found: " + fileName));
+        pdf.setTopic(newTopic);
+        return pdfRepository.save(pdf);
     }
 }

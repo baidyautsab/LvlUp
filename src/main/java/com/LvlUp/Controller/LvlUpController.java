@@ -50,13 +50,32 @@ public class LvlUpController {
     }
 
     @PostMapping("/admin/upload-pdf")
-    public ResponseEntity<PdfExtractor> uploadPdf(
+    public ResponseEntity<?> uploadPdf(
             @RequestParam("file") MultipartFile file,
             @RequestParam("topic") String topic) {
 
-        log.info("Received PDF upload request for topic: {}", topic);
-        PdfExtractor savedDoc = pdfService.extractAndSave(file, topic);
-        return ResponseEntity.ok(savedDoc);
+        String fileName = file.getOriginalFilename();
+        log.info("Received PDF upload request for file: {} with topic: {}", fileName, topic);
+
+        if (pdfService.existsByFileName(fileName)) {
+            log.warn("File already exists: {}", fileName);
+
+            // Return a structured warning message
+            Map<String, Object> warningResponse = new HashMap<>();
+            warningResponse.put("status", "CONFLICT");
+            warningResponse.put("error", "Duplicate File");
+            warningResponse.put("message", "The file '" + fileName + "' has already been uploaded.");
+
+            return ResponseEntity.status(409).body(warningResponse);
+        }
+
+        try {
+            PdfExtractor savedDoc = pdfService.extractAndSave(file, topic);
+            return ResponseEntity.ok(savedDoc);
+        } catch (Exception e) {
+            log.error("Failed to process PDF: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body("Error processing PDF: " + e.getMessage());
+        }
     }
 
     private String formatDate(long time) {

@@ -14,7 +14,7 @@ public class PdfExtractor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String fileName;
 
     @Lob // Large Object for storing the full extracted text
