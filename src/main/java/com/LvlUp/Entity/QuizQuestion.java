@@ -1,12 +1,11 @@
 package com.LvlUp.Entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "genai_quiz_question")
 public class QuizQuestion {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,14 +26,19 @@ public class QuizQuestion {
     private String optionD;
 
     @Column(length = 1, nullable = false)
-    private String correctOption; // e.g., "A", "B"
+    private String correctOption;
 
     @Column(columnDefinition = "TEXT")
-    private String explanation; // AI's reason why the answer is correct
+    private String explanation;
 
+    // Many questions → One quiz
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pdf_id", nullable = false)
-    private PdfExtractor document;
+    @JoinColumn(name = "quiz_id", nullable = false)
+    private Quiz quiz;
+
+    // Optional but future-proof
+    @Column(nullable = true)
+    private String difficulty; // EASY, MEDIUM, HARD
 
     public Long getId() {
         return id;
@@ -100,26 +104,21 @@ public class QuizQuestion {
         this.explanation = explanation;
     }
 
-    public PdfExtractor getDocument() {
-        return document;
+    public Quiz getQuiz() {
+        return quiz;
     }
 
-    public void setDocument(PdfExtractor document) {
-        this.document = document;
+    public void setQuiz(Quiz quiz) {
+        this.quiz = quiz;
     }
 
-    @Override
-    public String toString() {
-        return "QuizQuestion{" +
-                "id=" + id +
-                ", questionText='" + questionText + '\'' +
-                ", optionA='" + optionA + '\'' +
-                ", optionB='" + optionB + '\'' +
-                ", optionC='" + optionC + '\'' +
-                ", optionD='" + optionD + '\'' +
-                ", correctOption='" + correctOption + '\'' +
-                ", explanation='" + explanation + '\'' +
-                ", document=" + document +
-                '}';
+    public String getDifficulty() {
+        return difficulty;
     }
+
+    public void setDifficulty(String difficulty) {
+        this.difficulty = difficulty;
+    }
+
+    // getters & setters
 }

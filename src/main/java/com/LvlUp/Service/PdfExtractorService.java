@@ -1,6 +1,7 @@
 package com.LvlUp.Service;
 
 import com.LvlUp.Entity.PdfExtractor;
+import com.LvlUp.Entity.Quiz;
 import com.LvlUp.Repository.PdfExtractorRepository;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
@@ -15,10 +16,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class PdfExtractorService {
-    private final PdfExtractorRepository pdfRepository;
-    private final QuizGenerationService quizService; // Inject the new service
 
-    public PdfExtractorService(PdfExtractorRepository pdfRepository, QuizGenerationService quizService) {
+    private final PdfExtractorRepository pdfRepository;
+    private final QuizGenerationService quizService;
+
+    public PdfExtractorService(
+            PdfExtractorRepository pdfRepository,
+            QuizGenerationService quizService
+    ) {
         this.pdfRepository = pdfRepository;
         this.quizService = quizService;
     }
@@ -27,35 +32,40 @@ public class PdfExtractorService {
         return pdfRepository.existsByFileName(fileName);
     }
 
+    /**
+     * Upload PDF → extract text → save PDF → generate quiz
+     */
     @Transactional
     public PdfExtractor extractAndSave(MultipartFile file, String topic) {
-        try {
-            // 1. Convert MultipartFile to Resource
-            InputStreamResource resource = new InputStreamResource(file.getInputStream());
 
-            // 2. Use Spring AI Tika Reader to extract text
+        try {
+            // 1️⃣ Convert MultipartFile to Resource
+            InputStreamResource resource =
+                    new InputStreamResource(file.getInputStream());
+
+            // 2️⃣ Extract text using Tika
             TikaDocumentReader reader = new TikaDocumentReader(resource);
 
-            // 3. Join all pages/fragments into one string
             String content = reader.get()
                     .stream()
                     .map(Document::getText)
                     .collect(Collectors.joining("\n"));
 
-            // 4. Create and Save Entity
-            PdfExtractor pdfExtractor = new PdfExtractor();
-            pdfExtractor.setFileName(file.getOriginalFilename());
-            pdfExtractor.setTopic(topic);
-            pdfExtractor.setExtractedText(content);
+            // 3️⃣ Save PDF entity
+            PdfExtractor pdf = new PdfExtractor();
+            pdf.setFileName(file.getOriginalFilename());
+            pdf.setTopic(topic);
+            pdf.setExtractedText(content);
 
-            PdfExtractor savedPdf = pdfRepository.save(pdfExtractor);
+            PdfExtractor savedPdf = pdfRepository.save(pdf);
 
-            quizService.generateAndSaveQuestions(savedPdf);
+            // 4️⃣ Generate Quiz (creates quiz + questions)
+            quizService.generateAndSaveQuiz(savedPdf);
 
             return savedPdf;
 
         } catch (IOException e) {
-            throw new RuntimeException("Failed to process PDF file: " + e.getMessage());
+            throw new RuntimeException("Failed to process PDF file", e);
         }
     }
 
@@ -69,7 +79,10 @@ public class PdfExtractorService {
 
     public PdfExtractor updateTopic(String fileName, String newTopic) {
         PdfExtractor pdf = pdfRepository.findByFileName(fileName)
-                .orElseThrow(() -> new RuntimeException("File not found: " + fileName));
+                .orElseThrow(() ->
+                        new RuntimeException("File not found: " + fileName)
+                );
+
         pdf.setTopic(newTopic);
         return pdfRepository.save(pdf);
     }
