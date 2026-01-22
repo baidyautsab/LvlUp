@@ -131,8 +131,18 @@ Quiz: The structured game generated from that text.
 * *Did streak hit 7?* -> Insert row into **`UserBadge`**.
 * *Did XP hit 1000?* -> Insert row into **`UserBadge`**.
 
+```
+graph TD
+User[User Entity] -->|1:1| UserProfile[UserProfile Entity]
+User -->|1:N| QuizAttempt[QuizAttempt Entity]
+User -->|1:N| UserBadge[UserBadge Entity]
 
-
-### **Next Step**
-
-Would you like me to generate the **Spring Boot Controller** code (the API endpoints) that your frontend will call to fetch this profile data and submit new quiz results?
+    QuizAttempt -->|N:1| Quiz[Quiz Entity]
+    Quiz -->|N:1| PdfExtractor[PdfExtractor Entity]
+    
+    subgraph "New Data Available"
+    UserProfile --> Details[Email, Full Name, Avatar]
+    UserProfile --> Gamification[Total XP, League, Current Streak]
+    QuizAttempt --> History[Score, Date Taken, Accuracy]
+    end
+```
