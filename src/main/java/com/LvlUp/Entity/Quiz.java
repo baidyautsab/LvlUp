@@ -78,5 +78,15 @@ public class Quiz {
         this.questions = questions;
     }
 
-    // getters & setters
+    @Override
+    public String toString() {
+        return "Quiz{" +
+                "id=" + id +
+                ", pdf=" + pdf +
+                ", title='" + title + '\'' +
+                ", totalQuestions=" + totalQuestions +
+                ", createdAt=" + createdAt +
+                ", questions=" + questions +
+                '}';
+    }
 }

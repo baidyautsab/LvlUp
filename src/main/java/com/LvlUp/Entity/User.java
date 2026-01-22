@@ -25,6 +25,9 @@ public class User {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private UserProfile userProfile;
+
     // 🔹 JPA needs a no-arg constructor
     protected User() {}
 
@@ -34,7 +37,6 @@ public class User {
         this.role = role;
     }
 
-    // ---------- Getters & Setters ----------
     public Long getId() {
         return id;
     }
@@ -50,8 +52,10 @@ public class User {
     public String getPassword() {
         return password;
     }
+    public UserProfile getUserProfile() {
+        return userProfile;
+    }
 
-    // Password should always be ENCODED before setting
     public void setPassword(String password) {
         this.password = password;
     }
@@ -62,5 +66,11 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public void setUserProfile(UserProfile userProfile) {
+        this.userProfile = userProfile;
+        // Ensure bidirectional link
+        userProfile.setUser(this);
     }
 }

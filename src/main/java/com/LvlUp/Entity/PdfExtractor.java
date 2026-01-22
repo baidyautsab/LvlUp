@@ -77,5 +77,15 @@ public class PdfExtractor {
         this.quizzes = quizzes;
     }
 
-    // getters & setters
+    @Override
+    public String toString() {
+        return "PdfExtractor{" +
+                "id=" + id +
+                ", fileName='" + fileName + '\'' +
+                ", extractedText='" + extractedText + '\'' +
+                ", topic='" + topic + '\'' +
+                ", uploadedAt=" + uploadedAt +
+                ", quizzes=" + quizzes +
+                '}';
+    }
 }

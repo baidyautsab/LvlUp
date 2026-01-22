@@ -120,5 +120,20 @@ public class QuizQuestion {
         this.difficulty = difficulty;
     }
 
-    // getters & setters
+    @Override
+    public String toString() {
+        return "QuizQuestion{" +
+                "id=" + id +
+                ", questionText='" + questionText + '\'' +
+                ", optionA='" + optionA + '\'' +
+                ", optionB='" + optionB + '\'' +
+                ", optionC='" + optionC + '\'' +
+                ", optionD='" + optionD + '\'' +
+                ", correctOption='" + correctOption + '\'' +
+                ", explanation='" + explanation + '\'' +
+                ", quiz=" + quiz +
+                ", difficulty='" + difficulty + '\'' +
+                '}';
+    }
+
 }
