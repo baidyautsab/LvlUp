@@ -2,7 +2,6 @@
 
 ```mermaid
 erDiagram
-    %% --- EXISTING TABLES (FROM YOUR UPLOAD) ---
     User {
         Long id PK
         String username
@@ -33,7 +32,6 @@ erDiagram
         String correctOption
     }
 
-    %% --- NEW TABLES (ADDED FOR YOU) ---
     UserProfile {
         Long user_id PK, FK "Same as User.id"
         String fullName
